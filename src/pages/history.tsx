@@ -36,12 +36,12 @@ const History = () => {
         ) : (
           <div
             className="
-    w-full max-w-2xl 
-    grid gap-6 
-    grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
-    justify-items-center
-    items-start
-  "
+                w-full max-w-2xl 
+                grid gap-6 
+                grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
+                justify-items-center
+                items-start
+            "
           >
             {completedTasks.map((task) => (
               <TaskCard
@@ -57,3 +57,5 @@ const History = () => {
     </div>
   );
 };
+
+export default History
