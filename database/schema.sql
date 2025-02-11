@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS todos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    done BOOLEAN DEFAULT FALSE
-);
