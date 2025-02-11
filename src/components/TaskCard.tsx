@@ -6,8 +6,17 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
+import { Task } from '../types';
 
-const TaskCard = ({
+interface TaskCardProps {
+  task: Task;
+  onEdit?: (task: TaskCardProps['task']) => void;
+  onDelete: (id?: number) => void;
+  onMarkCompleted?: (id: number) => void;
+  isHistory?: boolean;
+}
+
+const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onEdit,
   onDelete,
@@ -82,7 +91,7 @@ const TaskCard = ({
         <div className="flex space-x-3">
           {!isHistory && (
             <button
-              onClick={() => onEdit(task)}
+              onClick={() => onEdit?.(task)}
               className="hover:scale-105 transition"
             >
               <PencilIcon className="w-5 h-5 text-[rgba(55,47,47,1)]" />
@@ -105,7 +114,7 @@ const TaskCard = ({
           </span>
         ) : !isHistory ? (
           <button
-            onClick={() => onMarkCompleted(task.id)}
+            onClick={() => task.id && onMarkCompleted?.(task.id)}
             className="text-[rgba(108,134,168,1)] flex items-center space-x-1 hover:text-opacity-80 transition text-xs md:text-sm font-medium font-poppins"
           >
             <span>Mark completed</span>

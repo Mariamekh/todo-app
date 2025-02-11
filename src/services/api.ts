@@ -36,9 +36,7 @@ export const removeTodoListItem = async (id: number) => {
 };
 
 export const editTodoList = async (id, title, description) => {
-  if (!id) throw new Error('Edit failed: Task ID is missing!'); // Debugging ✅
-
-  console.log('Editing task:', { id, title, description });
+  if (!id) throw new Error('Edit failed: Task ID is missing!');
 
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',

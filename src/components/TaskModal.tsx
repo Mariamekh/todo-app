@@ -1,49 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Task } from '../types';
 
-export default function TaskModal({
+interface TaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (task: Task) => Promise<void>;
+  initialData?: Task | null;
+}
+
+const TaskModal: React.FC<TaskModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  initialData = null,
-}) {
+  initialData,
+}) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [isTitleValid, setIsTitleValid] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setDescription(initialData.description || '');
-    } else {
-      setTitle('');
-      setDescription('');
-    }
+    setTitle(initialData?.title ?? '');
+    setDescription(initialData?.description ?? '');
   }, [initialData]);
 
-  const handleTitleChange = (e) => {
-    const input = e.target.value.slice(0, 40);
-    setTitle(input);
-    setIsTitleValid(input.trim().length > 0);
-  };
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value.slice(0, 180));
-  };
+  const handleTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const input = e.target.value.slice(0, 40);
+      setTitle(input);
+      setIsTitleValid(input.trim().length > 0);
+    },
+    [],
+  );
 
-  const handleSubmit = () => {
-    if (!title.trim()) return;
+  const handleDescriptionChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setDescription(e.target.value.slice(0, 180));
+    },
+    [],
+  );
 
-    onSave({
-      id: initialData?.id,
-      title: title.trim(),
-      description: description.trim() || '',
-    });
+  const handleSubmit = useCallback(async () => {
+    if (!title.trim() || isSubmitting) return;
+    setIsSubmitting(true);
 
-    setTitle('');
-    setDescription('');
-    onClose();
-  };
+    try {
+      await onSave({
+        id: initialData?.id,
+        title: title.trim(),
+        description: description.trim() || '',
+      });
+
+      setTitle('');
+      setDescription('');
+      onClose();
+    } catch (error) {
+      console.error('Task save failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [title, description, onSave, onClose, initialData, isSubmitting]);
 
   if (!isOpen) return null;
 
@@ -59,18 +76,14 @@ export default function TaskModal({
         <button onClick={onClose} className="absolute top-4 right-4">
           <XMarkIcon className="w-5 h-5 text-gray-500" />
         </button>
-
         <h2 className="text-[rgba(48,80,125,1)] text-sm font-bold font-poppins leading-[18px] mb-4 text-center">
           {initialData ? 'Edit Task' : 'Create Task'}
         </h2>
-
         <div className="relative mb-3">
           <input
             type="text"
             value={title}
             onChange={handleTitleChange}
-            onFocus={() => setIsTitleFocused(true)}
-            onBlur={() => setIsTitleFocused(title.length > 0)}
             maxLength={40}
             className={`w-full border-[1px] ${
               isTitleValid ? 'border-[rgba(106,108,224,1)]' : 'border-red-500'
@@ -82,7 +95,7 @@ export default function TaskModal({
           />
           <label
             className={`absolute left-3 transition-all ${
-              isTitleFocused || title.length > 0
+              title.length > 0
                 ? 'text-xs text-[rgba(108,134,168,1)] top-1'
                 : 'text-sm text-gray-400 top-3'
             }`}
@@ -90,27 +103,27 @@ export default function TaskModal({
             Task Name
           </label>
         </div>
-
         <textarea
           placeholder="Type task details here..."
           value={description}
+          onChange={handleDescriptionChange}
           maxLength={180}
-          onChange={(e) => setDescription(e.target.value)}
-          className=" text-[rgba(108,134,168,1)] font-medium text-sm md:text-base p-2 rounded-md font-poppins w-full border-[1px] border-gray-300 p-2 pl-3 rounded-md bg-[rgba(232,241,253,1)] shadow-[inset_1px_1px_4px_0px_rgba(48,80,125,0.25)] focus:outline-none focus:ring-1 focus:ring-gray-400 h-28 resize-none text-base mb-2"
+          className="text-[rgba(108,134,168,1)] font-medium text-sm md:text-base p-2 rounded-md font-poppins w-full border-[1px] border-gray-300 bg-[rgba(232,241,253,1)] shadow-[inset_1px_1px_4px_0px_rgba(48,80,125,0.25)] focus:outline-none focus:ring-1 focus:ring-gray-400 h-28 resize-none text-base mb-2"
         />
-
         <button
           onClick={handleSubmit}
-          disabled={!isTitleValid}
+          disabled={!isTitleValid || isSubmitting}
           className={`w-full py-2 rounded-md font-poppins font-medium text-base transition-all ${
             isTitleValid
               ? 'bg-[rgba(106,108,224,1)] text-white hover:bg-[rgba(86,88,204,1)]'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          Save
+          {isSubmitting ? 'Saving...' : 'Save'}
         </button>
       </div>
     </div>
   );
-}
+};
+
+export default TaskModal;

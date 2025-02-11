@@ -1,64 +1,62 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markAsDone, removeTodoListItem, editTodoList } from '../services/api';
+import React, { useState, useCallback, useMemo } from 'react';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
+import { useTasks } from '../hooks/useTasks';
+import { Task } from '../types';
 
-const TaskList = ({ tasks }) => {
-  const queryClient = useQueryClient();
+interface TaskListProps {
+  tasks: Task[];
+  isHistory?: boolean;
+}
+
+const TaskList: React.FC<TaskListProps> = ({ tasks, isHistory = false }) => {
+  const { addTask, editTask, deleteTask, markAsDoneTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState(null);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
-  const editMutation = useMutation({
-    mutationFn: async (task) => {
-      if (!task.id) throw new Error('Task ID is missing!');
-      return editTodoList(task.id, task.title, task.description);
-    },
-    onSuccess: () => queryClient.invalidateQueries(['todos']),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: removeTodoListItem,
-    onSuccess: () => queryClient.invalidateQueries(['todos']),
-  });
-
-  const markAsDoneMutation = useMutation({
-    mutationFn: markAsDone,
-    onSuccess: () => queryClient.invalidateQueries(['todos']),
-  });
-
-  const handleEdit = (task) => {
+  const handleEdit = useCallback((task: Task) => {
     setTaskToEdit(task);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleSave = async (task) => {
-    if (task.id) {
-      await editMutation.mutateAsync(task);
-    }
-    setIsModalOpen(false);
-  };
+  const handleSave = useCallback(
+    async (task: Task) => {
+      if (task.id) {
+        editTask(task);
+      } else {
+        addTask(task);
+      }
+      setIsModalOpen(false);
+    },
+    [editTask, addTask],
+  );
+
+  const renderedTasks = useMemo(
+    () =>
+      tasks.map((task: Task) => (
+        <TaskCard
+          key={task.id}
+          task={task}
+          isHistory={isHistory}
+          onEdit={handleEdit}
+          onDelete={() => deleteTask(task.id!)}
+          onMarkCompleted={() => markAsDoneTask(task.id!)}
+        />
+      )),
+    [tasks, isHistory, handleEdit, deleteTask, markAsDoneTask],
+  );
 
   return (
     <>
       <div
         className="
-    w-full max-w-2xl 
-    grid gap-6 
-    grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
-    justify-items-center
-    items-start
-  "
+        w-full max-w-2xl 
+        grid gap-6 
+        grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
+        justify-items-center items-start
+      "
       >
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onEdit={handleEdit}
-            onDelete={() => deleteMutation.mutate(task.id)}
-            onMarkCompleted={() => markAsDoneMutation.mutate(task.id)}
-          />
-        ))}
+        {renderedTasks}
       </div>
 
       <TaskModal
