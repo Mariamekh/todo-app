@@ -11,15 +11,15 @@ const Header = ({ onClear, title }) => {
       <div className="flex space-x-3">
         <button
           onClick={() => router.push('/')}
-          className={`flex flex-col items-center space-y-1 focus:outline-none ${
+          className={`flex flex-col items-center space-y-2 focus:outline-none ${
             currentPath === '/'
               ? 'text-[rgba(48,80,125,1)] font-semibold'
               : 'text-gray-500'
           }`}
         >
-          <span className="text-base">Tasks</span>
+          <span className="text-sm md:text-base">Tasks</span>
           <div
-            className={`p-4 rounded-md flex items-center justify-center w-14 h-14 transition ${
+            className={`rounded-lg flex items-center justify-center w-11 h-11 transition-all ${
               currentPath === '/' ? 'bg-[rgba(106,108,224,1)]' : 'bg-gray-300'
             }`}
           >
@@ -29,15 +29,15 @@ const Header = ({ onClear, title }) => {
 
         <button
           onClick={() => router.push('/history')}
-          className={`flex flex-col items-center space-y-1 focus:outline-none ${
+          className={`flex flex-col items-center space-y-2 focus:outline-none ${
             currentPath === '/history'
               ? 'text-[rgba(48,80,125,1)] font-semibold'
               : 'text-gray-500'
           }`}
         >
-          <span className="text-base">History</span>
+          <span className="text-sm md:text-base">History</span>
           <div
-            className={`p-4 rounded-md flex items-center justify-center w-14 h-14 transition   ${
+            className={`rounded-lg flex items-center justify-center w-11 h-11 transition-all ${
               currentPath === '/history'
                 ? 'bg-[rgba(106,108,224,1)]'
                 : 'bg-gray-300'
@@ -50,7 +50,7 @@ const Header = ({ onClear, title }) => {
 
       <button
         onClick={onClear}
-        className="text-[rgba(48,80,125,1)] underline font-medium text-sm hover:text-gray-700 transition "
+        className="text-[rgba(48,80,125,1)] underline font-medium text-sm hover:text-gray-700 transition"
       >
         {title}
       </button>

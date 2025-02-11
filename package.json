@@ -42,7 +42,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "postcss-import": "^16.1.0",
     "postcss-nesting": "^13.0.1",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.0",
     "typescript": "^5"
   }
 }
