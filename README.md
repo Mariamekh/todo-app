@@ -11,7 +11,7 @@ Styling: [TailwindCSS]
 ## Getting Started
  
 ```bash
-yarn install && yarn build
+yarn install && yarn build && yarn dev
 ```
 
 # todo-app
