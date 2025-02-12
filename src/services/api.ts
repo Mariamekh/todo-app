@@ -1,89 +1,65 @@
-const API_URL = 'http://localhost:3000/api/todos';
-const HISTORY_URL = 'http://localhost:3000/api/history';
+import { Task } from "@/types";
 
-export const getTodoList = async () => {
-  const response = await fetch(API_URL);
-  if (!response.ok) throw new Error('Failed to fetch tasks');
-  return response.json();
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const HISTORY_URL = process.env.NEXT_PUBLIC_HISTORY_URL;
 
-export const addTodoList = async (newTask: {
-  title: string;
-  description: string;
-}) => {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newTask),
-  });
+if (!API_URL || !HISTORY_URL) {
+  throw new Error(
+    'Missing environment variables: Ensure NEXT_PUBLIC_API_URL and NEXT_PUBLIC_HISTORY_URL are set.',
+  );
+}
 
-  if (!res.ok) throw new Error('Failed to add task');
-  return res.json();
-};
+type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-export const removeTodoListItem = async (id: number) => {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-  });
+const apiRequest = async <T>(
+  url: string,
+  method: HTTPMethod = 'GET',
+  body?: unknown,
+): Promise<T> => {
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to delete task: ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API Error: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Network Request Failed:', error);
+    throw new Error('A network error occurred. Please try again.');
   }
-
-  return res.json();
 };
 
-export const editTodoList = async (id, title, description) => {
-  if (!id) throw new Error('Edit failed: Task ID is missing!');
+export const getTodoList = async (): Promise<Task[]> =>
+  apiRequest<Task[]>(API_URL);
 
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, description }),
-  });
+export const addTodoList = async (task: Omit<Task, 'id'>): Promise<Task> =>
+  apiRequest<Task>(API_URL, 'POST', task);
 
-  if (!res.ok) throw new Error('Failed to edit task');
-  return res.json();
-};
+export const removeTodoListItem = async (
+  id: number,
+): Promise<{ success: boolean }> => apiRequest(`${API_URL}/${id}`, 'DELETE');
 
-export const clearTodoList = async () => {
-  const res = await fetch(`${API_URL}/clear`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-  });
+export const editTodoList = async (
+  id: number,
+  title: string,
+  description: string,
+): Promise<Task> =>
+  apiRequest<Task>(`${API_URL}/${id}`, 'PUT', { title, description });
 
-  if (!res.ok) {
-    throw new Error(`Failed to clear tasks: ${res.statusText}`);
-  }
+export const clearTodoList = async (): Promise<{ success: boolean }> =>
+  apiRequest(`${API_URL}/clear`, 'DELETE');
 
-  return res.json();
-};
+export const markAsDone = async (id: number): Promise<Task> =>
+  apiRequest<Task>(`${API_URL}/${id}`, 'PATCH', { completed: true });
 
-export const markAsDone = async (id: number) => {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ completed: 1 }),
-  });
+export const getHistoryList = async (): Promise<Task[]> =>
+  apiRequest<Task[]>(HISTORY_URL);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to mark as done: ${errorText}`);
-  }
-
-  return res.json();
-};
-
-export const getHistoryList = async () => {
-  const response = await fetch(`${HISTORY_URL}`);
-  if (!response.ok) throw new Error('Failed to fetch history');
-  return response.json();
-};
-
-export const clearHistory = async () => {
-  const res = await fetch(`${HISTORY_URL}/clear`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to clear history');
-  return res.json();
-};
+export const clearHistory = async (): Promise<{ success: boolean }> =>
+  apiRequest(`${HISTORY_URL}/clear`, 'DELETE');

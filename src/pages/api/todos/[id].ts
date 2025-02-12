@@ -1,80 +1,50 @@
-import Database from 'better-sqlite3';
 import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../database/db';
 
-const db = new Database('database/database.db');
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   const { id } = req.query;
+
+  if (!id || Array.isArray(id))
+    return res.status(400).json({ error: 'Invalid ID' });
+
+  const taskId = parseInt(id, 10);
 
   if (req.method === 'PUT') {
     try {
       const { title, description } = req.body;
-      const id = parseInt(req.query.id as string, 10);
-
-      if (!id || isNaN(id)) {
-        return res
-          .status(400)
-          .json({ error: 'Task ID is required and must be a number' });
-      }
-
-      const stmt = db.prepare(
-        'UPDATE todos SET title = ?, description = ? WHERE id = ?',
-      );
-      stmt.run(title, description, id);
-
-      return res.status(200).json({ success: true, id, title, description });
+      const updatedTodo = await prisma.todo.update({
+        where: { id: taskId },
+        data: { title, description },
+      });
+      return res.status(200).json(updatedTodo);
     } catch (error) {
-      console.error('Database Error:', error);
-      return res.status(500).json({ error: 'Failed to update task' });
-    }
-  }
-
-  if (req.method === 'PATCH') {
-    try {
-      const { completed } = req.body;
-      const id = parseInt(req.query.id as string, 10);
-
-      if (!id) {
-        return res.status(400).json({ error: 'Task ID is required' });
-      }
-
-      const stmt = db.prepare('UPDATE todos SET completed = ? WHERE id = ?');
-      stmt.run(completed, id);
-
-      return res.status(200).json({ success: true, id, completed });
-    } catch (error) {
-      console.error('Database Error:', error);
-      return res.status(500).json({ error: 'Failed to mark task as done' });
+      return res.status(500).json({ message: 'Failed to update task' });
     }
   }
 
   if (req.method === 'DELETE') {
     try {
-      if (!id) {
-        return res.status(400).json({ message: 'Task ID is required' });
-      }
-
-      const taskId = parseInt(id as string, 10);
-      if (isNaN(taskId)) {
-        return res.status(400).json({ message: 'Invalid task ID' });
-      }
-
-      const stmt = db.prepare('DELETE FROM todos WHERE id = ?');
-      const result = stmt.run(taskId);
-
-      if (result.changes === 0) {
-        return res.status(404).json({ message: 'Task not found' });
-      }
-
-      return res
-        .status(200)
-        .json({ success: true, message: 'Task deleted successfully' });
+      await prisma.todo.delete({ where: { id: taskId } });
+      return res.status(200).json({ message: 'Task deleted' });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: 'Error deleting task', error: error.message });
+      return res.status(500).json({ message: 'Failed to delete task' });
     }
   }
 
-  res.status(405).json({ message: 'Method Not Allowed' });
+  if (req.method === 'PATCH') {
+    try {
+      const updatedTodo = await prisma.todo.update({
+        where: { id: taskId },
+        data: { completed: true },
+      });
+      return res.status(200).json(updatedTodo);
+    } catch (error) {
+      return res.status(500).json({ message: 'Failed to mark task as done' });
+    }
+  }
+
+  return res.status(405).json({ message: 'Method Not Allowed' });
 }
