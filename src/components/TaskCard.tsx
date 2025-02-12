@@ -11,7 +11,7 @@ import { Task } from '../types';
 interface TaskCardProps {
   task: Task;
   onEdit?: (task: TaskCardProps['task']) => void;
-  onDelete: (id?: number) => void;
+  onDelete: (id: number) => void;
   onMarkCompleted?: (id: number) => void;
   isHistory?: boolean;
 }

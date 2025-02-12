@@ -8,6 +8,7 @@ import TaskModal from './TaskModal';
 interface SearchablePageProps {
   title: string;
   fetchTasks: () => Promise<any[]>;
+  deleteTask: (id: number) => void;
   onClear: () => void;
   showAddButton?: boolean;
   isHistory?: boolean;
@@ -16,6 +17,7 @@ interface SearchablePageProps {
 const SearchablePage: React.FC<SearchablePageProps> = ({
   title,
   fetchTasks,
+  deleteTask,
   onClear,
   showAddButton = false,
   isHistory = false,
@@ -47,6 +49,7 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
           isLoading={isLoading}
           isHistory={isHistory}
           tasks={filteredTasks}
+          onDelete={deleteTask}
         />
       </div>
 

@@ -6,7 +6,7 @@ import { useTasks } from '@/hooks/useTasks';
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Task;
+  initialData?: Task | null;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
@@ -14,17 +14,22 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   initialData,
 }) => {
+  const { addTask, editTask } = useTasks();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { addTask, editTask } = useTasks();
-
   useEffect(() => {
-    setTitle(initialData?.title ?? '');
-    setDescription(initialData?.description ?? '');
-  }, [initialData]);
+    if (isOpen && initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description ?? '');
+    } else {
+      setTitle('');
+      setDescription('');
+    }
+  }, [isOpen, initialData]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,18 +49,19 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const handleSubmit = useCallback(async () => {
     if (!title.trim() || isSubmitting) return;
+
     setIsSubmitting(true);
 
     try {
       if (initialData) {
-        await editTask(initialData);
-      } else {
-        await addTask({
+        await editTask({
+          ...initialData,
           title: title.trim(),
           description: description.trim(),
         });
+      } else {
+        await addTask({ title: title.trim(), description: description.trim() });
       }
-      onClose();
 
       setTitle('');
       setDescription('');
@@ -67,9 +73,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
     }
   }, [
     title,
+    description,
     addTask,
     editTask,
-    description,
     onClose,
     initialData,
     isSubmitting,

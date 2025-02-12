@@ -1,4 +1,4 @@
-Frontend:  [Next.js]  (React + TypeScript)
+Frontend: [Next.js] (React + TypeScript)
 
 Backend: Next.js API Routes (serverless functions)
 
@@ -9,7 +9,7 @@ State Management: [ReactQuery]
 Styling: [TailwindCSS]
 
 ## Getting Started
- 
+
 ```bash
 yarn install && yarn build && yarn dev
 ```

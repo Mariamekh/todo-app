@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+const MyApp = ({ Component, pageProps }: AppProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={pageProps.dehydratedState}>
@@ -26,4 +26,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </HydrationBoundary>
     </QueryClientProvider>
   );
-}
+};
+
+export default MyApp;

@@ -9,14 +9,16 @@ interface TaskListProps {
   tasks: Task[];
   isHistory: boolean;
   isLoading: boolean;
+  onDelete: (id: number) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
   isLoading,
   tasks,
   isHistory = false,
+  onDelete,
 }) => {
-  const { deleteTask, markAsDoneTask } = useTasks();
+  const { markAsDoneTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>();
 
@@ -33,11 +35,11 @@ const TaskList: React.FC<TaskListProps> = ({
           task={task}
           isHistory={isHistory}
           onEdit={handleEdit}
-          onDelete={() => deleteTask(task.id!)}
+          onDelete={onDelete}
           onMarkCompleted={() => markAsDoneTask(task.id!)}
         />
       )),
-    [tasks, isHistory, handleEdit, deleteTask, markAsDoneTask],
+    [tasks, isHistory, handleEdit, onDelete, markAsDoneTask],
   );
 
   return (

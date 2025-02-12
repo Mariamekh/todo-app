@@ -63,3 +63,8 @@ export const getHistoryList = async (): Promise<Task[]> =>
 
 export const clearHistory = async (): Promise<{ success: boolean }> =>
   apiRequest(`${HISTORY_URL}/clear`, 'DELETE');
+
+export const deleteHistoryTask = async (
+  id: number,
+): Promise<{ success: boolean }> =>
+  apiRequest(`${HISTORY_URL}/${id}`, 'DELETE');
