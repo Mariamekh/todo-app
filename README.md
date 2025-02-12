@@ -11,7 +11,7 @@ Styling: [TailwindCSS]
 ## Getting Started
  
 ```bash
-yarn install && yarn prisma migrate dev --name init && yarn prisma generate
+yarn install && yarn build
 ```
 
 # todo-app
