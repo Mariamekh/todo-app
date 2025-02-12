@@ -21,7 +21,7 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
   isHistory = false,
 }) => {
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ['todos'],
+    queryKey: [isHistory ? 'history' : 'todos'],
     queryFn: fetchTasks,
     staleTime: 0,
   });

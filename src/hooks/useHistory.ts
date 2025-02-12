@@ -8,7 +8,7 @@ export const useHistory = () => {
   const clearMutation = useMutation({
     mutationFn: clearHistory,
     onSuccess: () => {
-      queryClient.invalidateQueries(['history']);
+      queryClient.invalidateQueries({ queryKey: ['history'] });
       toast.success('History cleared!');
     },
     onError: () => toast.error('Failed to clear history'),
