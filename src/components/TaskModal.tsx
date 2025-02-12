@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Task } from '../types';
+import { useTasks } from '@/hooks/useTasks';
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: Task) => Promise<void>;
-  initialData?: Task | null;
+  initialData?: Task;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
   isOpen,
   onClose,
-  onSave,
   initialData,
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { addTask, editTask } = useTasks();
 
   useEffect(() => {
     setTitle(initialData?.title ?? '');
@@ -46,11 +47,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      await onSave({
-        id: initialData?.id,
-        title: title.trim(),
-        description: description.trim() || '',
-      });
+      if (initialData) {
+        await editTask(initialData);
+      } else {
+        await addTask({
+          title: title.trim(),
+          description: description.trim(),
+        });
+      }
+      onClose();
 
       setTitle('');
       setDescription('');
@@ -60,7 +65,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [title, description, onSave, onClose, initialData, isSubmitting]);
+  }, [
+    title,
+    addTask,
+    editTask,
+    description,
+    onClose,
+    initialData,
+    isSubmitting,
+  ]);
 
   if (!isOpen) return null;
 

@@ -16,17 +16,17 @@ export const useTasks = () => {
   const clearMutation = useMutation({
     mutationFn: clearTodoList,
     onSuccess: () => {
-      queryClient.invalidateQueries(['todos']);
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('All tasks cleared!');
     },
     onError: () => toast.error('Failed to clear tasks'),
   });
 
   const addMutation = useMutation({
-    mutationFn: async (task: Task) =>
+    mutationFn: async (task: Omit<Task, 'id'>) =>
       addTodoList({ title: task.title, description: task.description ?? '' }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['todos']);
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task added successfully!');
     },
     onError: () => toast.error('Failed to add task'),
@@ -34,9 +34,9 @@ export const useTasks = () => {
 
   const editMutation = useMutation({
     mutationFn: async (task: Task) =>
-      editTodoList(task.id, task.title, task.description),
+      editTodoList(task.id, task.title, task.description ?? ''),
     onSuccess: () => {
-      queryClient.invalidateQueries(['todos']);
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task updated!');
     },
     onError: () => toast.error('Failed to edit task'),
@@ -45,7 +45,7 @@ export const useTasks = () => {
   const deleteMutation = useMutation({
     mutationFn: async (taskId: number) => removeTodoListItem(taskId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['todos']);
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task deleted!');
     },
     onError: () => toast.error('Failed to delete task'),
@@ -54,7 +54,7 @@ export const useTasks = () => {
   const markAsDoneMutation = useMutation({
     mutationFn: async (taskId: number) => markAsDone(taskId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['todos']);
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task marked as done!');
     },
     onError: () => toast.error('Failed to mark task as done'),
@@ -63,7 +63,7 @@ export const useTasks = () => {
   return {
     fetchTasks: getTodoList,
     onClear: () => clearMutation.mutate(),
-    addTask: (task: Task) => addMutation.mutate(task),
+    addTask: (task: Omit<Task, 'id'>) => addMutation.mutate(task),
     editTask: (task: Task) => editMutation.mutate(task),
     deleteTask: (taskId: number) => deleteMutation.mutate(taskId),
     markAsDoneTask: (taskId: number) => markAsDoneMutation.mutate(taskId),

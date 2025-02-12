@@ -17,8 +17,6 @@ export default async function handler(
       .json({ success: true, message: 'All tasks cleared' });
   } catch (error) {
     console.error('Clear Tasks Error:', error);
-    return res
-      .status(500)
-      .json({ message: 'Failed to clear tasks', error: error.message });
+    return res.status(500).json({ message: 'Failed to clear tasks' });
   }
 }

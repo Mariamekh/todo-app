@@ -4,15 +4,12 @@ import SearchBar from './SearchBar';
 import TaskList from './TaskList';
 import Header from './Header';
 import TaskModal from './TaskModal';
-import { Task } from '../types';
 
 interface SearchablePageProps {
   title: string;
   fetchTasks: () => Promise<any[]>;
   onClear: () => void;
   showAddButton?: boolean;
-  addTask?: (task: Task) => void;
-  editTask?: (task: Task) => void;
   isHistory?: boolean;
 }
 
@@ -21,12 +18,10 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
   fetchTasks,
   onClear,
   showAddButton = false,
-  addTask,
-  editTask,
   isHistory = false,
 }) => {
   const { data: tasks, isLoading } = useQuery({
-    queryKey: [title.toLowerCase()],
+    queryKey: ['todos'],
     queryFn: fetchTasks,
     staleTime: 0,
   });
@@ -42,27 +37,6 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
           .includes(searchQuery.toLowerCase()),
       )
     : [];
-
-  const handleSave = async (task: Task) => {
-    if (!task.title.trim()) return;
-
-    const formattedTask = {
-      ...task,
-      id: task.id ?? 0,
-      description: task.description ?? '',
-    };
-
-    if (formattedTask.id > 0 && editTask) {
-      editTask(formattedTask);
-    } else if (addTask) {
-      addTask({
-        title: formattedTask.title,
-        description: formattedTask.description,
-      });
-    }
-
-    setIsModalOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-[rgba(232,241,253,1)] flex flex-col items-center px-4 md:px-10 py-6">
@@ -93,7 +67,6 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
           <TaskModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onSave={handleSave}
           />
         </>
       )}
