@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "lint": "next lint",
-    "build": "yarn prisma migrate dev --name init && yarn prisma generate",
+    "build:next": "yarn next build",
+    "build": "yarn prisma migrate dev --name init && yarn prisma generate && next build",
     "type-check": "tsc --noEmit",
     "postinstall": "prisma generate && prisma migrate deploy",
     "start": "next start"
