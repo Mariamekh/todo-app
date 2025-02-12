@@ -69,11 +69,11 @@ const SearchablePage: React.FC<SearchablePageProps> = ({
       <SearchBar onSearch={setSearchQuery} />
       <Header title={title} onClear={onClear} />
       <div className="w-full max-w-2xl">
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <TaskList isHistory={isHistory} tasks={filteredTasks} />
-        )}
+        <TaskList
+          isLoading={isLoading}
+          isHistory={isHistory}
+          tasks={filteredTasks}
+        />
       </div>
 
       {showAddButton && (

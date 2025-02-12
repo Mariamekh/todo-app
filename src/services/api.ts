@@ -1,4 +1,4 @@
-import { Task } from "@/types";
+import { Task } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const HISTORY_URL = process.env.NEXT_PUBLIC_HISTORY_URL;
