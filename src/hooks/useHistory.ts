@@ -5,12 +5,14 @@ import {
   deleteHistoryTask,
 } from '../services/api';
 import toast from 'react-hot-toast';
+import { useUser } from '@/context/UserContext';
 
 export const useHistory = () => {
   const queryClient = useQueryClient();
+  const { userId } = useUser();
 
   const clearMutation = useMutation({
-    mutationFn: clearHistory,
+    mutationFn: () => clearHistory(userId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['history'] });
       toast.success('History cleared!');
@@ -19,7 +21,7 @@ export const useHistory = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (taskId: number) => deleteHistoryTask(taskId),
+    mutationFn: (taskId: number) => deleteHistoryTask(userId!, taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['history'] });
       toast.success('Task removed from history!');
@@ -28,7 +30,7 @@ export const useHistory = () => {
   });
 
   return {
-    fetchTasks: getHistoryList,
+    fetchTasks: () => getHistoryList(userId!),
     onClear: () => clearMutation.mutate(),
     deleteTask: (taskId: number) => deleteMutation.mutate(taskId),
   };

@@ -5,26 +5,23 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  const userId = req.headers['x-user-id'] as string;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required in headers' });
+  }
+
   if (req.method === 'GET') {
     try {
-      const completedTodos = await prisma.todo.findMany({
-        where: { completed: true },
+      const completedTasks = await prisma.todo.findMany({
+        where: { userId, completed: true },
         orderBy: { createdAt: 'desc' },
       });
-      return res.status(200).json(completedTodos);
+      return res.status(200).json(completedTasks);
     } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch history' });
+      return res.status(500).json({ error: 'Failed to fetch history' });
     }
   }
 
-  if (req.method === 'DELETE') {
-    try {
-      await prisma.todo.deleteMany({ where: { completed: true } });
-      return res.status(200).json({ message: 'History cleared' });
-    } catch (error) {
-      return res.status(500).json({ message: 'Failed to clear history' });
-    }
-  }
-
-  return res.status(405).json({ message: 'Method Not Allowed' });
+  return res.status(405).json({ error: 'Method Not Allowed' });
 }

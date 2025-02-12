@@ -6,7 +6,12 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const { id } = req.query;
+  const userId = req.headers['x-user-id'] as string;
   const taskId = Number(id);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required in headers' });
+  }
 
   if (isNaN(taskId)) {
     return res.status(400).json({ error: 'Invalid task ID' });
@@ -14,8 +19,8 @@ export default async function handler(
 
   try {
     if (req.method === 'GET') {
-      const task = await prisma.todo.findUnique({
-        where: { id: taskId, completed: true },
+      const task = await prisma.todo.findFirst({
+        where: { id: taskId, userId, completed: true },
       });
 
       if (!task) {
@@ -26,14 +31,19 @@ export default async function handler(
     }
 
     if (req.method === 'DELETE') {
-      const deletedTask = await prisma.todo.delete({
-        where: { id: taskId, completed: true },
+      const deletedTask = await prisma.todo.deleteMany({
+        where: { id: taskId, userId, completed: true },
       });
+
+      if (deletedTask.count === 0) {
+        return res
+          .status(404)
+          .json({ error: 'Task not found or already deleted' });
+      }
 
       return res.status(200).json({
         success: true,
         message: 'Task removed from history',
-        deletedTask,
       });
     }
 

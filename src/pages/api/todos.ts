@@ -5,35 +5,43 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === 'GET') {
-    try {
+  try {
+    const userId = req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required in headers' });
+    }
+
+    if (req.method === 'GET') {
       const todos = await prisma.todo.findMany({
-        where: { completed: false },
+        where: { userId, completed: false },
         orderBy: { createdAt: 'desc' },
       });
+
       return res.status(200).json(todos);
-    } catch (error) {
-      return res.status(500).json({ message: 'Failed to fetch tasks' });
     }
-  }
 
-  if (req.method === 'POST') {
-    try {
+    if (req.method === 'POST') {
       const { title, description } = req.body;
-      if (!title) return res.status(400).json({ error: 'Title is required' });
 
-      const newTodo = await prisma.todo.create({
+      if (!title || title.trim().length === 0) {
+        return res.status(400).json({ error: 'Task title is required' });
+      }
+
+      const newTask = await prisma.todo.create({
         data: {
-          title,
-          description: description || '',
+          title: title.trim(),
+          description: description?.trim() || '',
+          userId,
         },
       });
 
-      return res.status(201).json(newTodo);
-    } catch (error) {
-      return res.status(500).json({ message: 'Failed to add task' });
+      return res.status(201).json(newTask);
     }
-  }
 
-  return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  } catch (error) {
+    console.error('Database Error:', error);
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
 }

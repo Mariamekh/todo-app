@@ -9,10 +9,15 @@ import {
 } from '../services/api';
 import { Task } from '../types';
 import toast from 'react-hot-toast';
+import { useUser } from '@/context/UserContext';
 
 export const useTasks = () => {
   const queryClient = useQueryClient();
+  const { userId } = useUser();
 
+  if (!userId) {
+    throw new Error('User ID is missing');
+  }
   const clearMutation = useMutation({
     mutationFn: clearTodoList,
     onSuccess: () => {
@@ -24,7 +29,10 @@ export const useTasks = () => {
 
   const addMutation = useMutation({
     mutationFn: async (task: Omit<Task, 'id'>) =>
-      addTodoList({ title: task.title, description: task.description ?? '' }),
+      addTodoList(userId, {
+        title: task.title,
+        description: task.description ?? '',
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task added successfully!');
@@ -34,7 +42,7 @@ export const useTasks = () => {
 
   const editMutation = useMutation({
     mutationFn: async (task: Task) =>
-      editTodoList(task.id, task.title, task.description ?? ''),
+      editTodoList(userId, task.id, task.title, task.description ?? ''),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task updated!');
@@ -43,7 +51,7 @@ export const useTasks = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (taskId: number) => removeTodoListItem(taskId),
+    mutationFn: async (taskId: number) => removeTodoListItem(userId, taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task deleted!');
@@ -52,7 +60,7 @@ export const useTasks = () => {
   });
 
   const markAsDoneMutation = useMutation({
-    mutationFn: async (taskId: number) => markAsDone(taskId),
+    mutationFn: async (taskId: number) => markAsDone(userId, taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
       toast.success('Task marked as done!');
@@ -61,8 +69,8 @@ export const useTasks = () => {
   });
 
   return {
-    fetchTasks: getTodoList,
-    onClear: () => clearMutation.mutate(),
+    fetchTasks: () => getTodoList(userId!),
+    onClear: () => clearMutation.mutate(userId),
     addTask: (task: Omit<Task, 'id'>) => addMutation.mutate(task),
     editTask: (task: Task) => editMutation.mutate(task),
     deleteTask: (taskId: number) => deleteMutation.mutate(taskId),
